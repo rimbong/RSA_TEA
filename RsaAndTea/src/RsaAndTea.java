@@ -32,6 +32,7 @@
  */
 
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 
@@ -51,7 +52,8 @@ public class RsaAndTea {
             RSA rsa = RSA.getInstance();
             rsa.init();
             // 실제 사용시에 세션또는 DB 등에 개인키를 따로 저장한다.
-            // session.setAttribute("privateKey", rsa.getPrivateKey(););
+            String privateKeyString = rsa.encodeBase64ToString(rsa.getPrivateKey().getEncoded());
+            // session.setAttribute("privateKey", privateKeyString);
             
             // 상황2 id와 pwd를 암호화한다. 실제로는 JS가 이를 담당한다.
             // TEA 암호화
@@ -61,7 +63,7 @@ public class RsaAndTea {
             // publicKeyString 형태를 사용할때는 publicKey를 문자열 형태로 다른곳에 보낼때 사용한다.
             String publicKeyString = rsa.encodeBase64ToString(rsa.getPublicKey().getEncoded());
             // publicKeyString을 받은 후 사용할 때는 다시 Base64로 디코딩해줘야 한다. 여기 수정해야함
-            PublicKey publicKey = rsa.convertStrToPubKey(rsa.decodeBase64(publicKeyString));
+            PublicKey publicKey = rsa.convertToPubKey(rsa.decodeBase64(publicKeyString));
             clientId = rsa.byteArrayToHex(rsa.encryptRsa(clientId, publicKey));
             clientPwd = rsa.byteArrayToHex(rsa.encryptRsa(clientPwd, rsa.getPublicKey()));
 
@@ -71,7 +73,9 @@ public class RsaAndTea {
             // PrivateKey privateKey = session.getAttribute("privateKey"); 
 
             // RSA 복호화
-            clientId = rsa.decryptRsa(rsa.getPrivateKey(), (rsa.hexToByteArray(clientId)));
+            // String privateKeyString = session.getAttribute("privateKeyString");
+            PrivateKey privateKey = rsa.convertToPvtKey(rsa.decodeBase64(privateKeyString));
+            clientId = rsa.decryptRsa(privateKey, (rsa.hexToByteArray(clientId)));
             clientPwd = rsa.decryptRsa(rsa.getPrivateKey(), rsa.hexToByteArray(clientPwd));            
 
             // TEA 복호화

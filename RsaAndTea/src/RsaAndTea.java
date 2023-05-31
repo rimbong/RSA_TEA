@@ -24,7 +24,8 @@
 
 
 /* 
- 클라이언트(js) <-------------------> 서버(java)
+ 클라이언트(js)      <------------------->      서버(java)
+ TEA - RSA 순 암호화                            RSA-TEA 순 복호화
     js에서 Tea를 이용한 암호화를 진행 후 이것을 RSA 암호화하여 서버에 넘긴다.
     서버에서는 이를 받아 복호화 진행하게 된다. ( 프론트는 코드 예시만 작성하고 값은 하드코딩값으로 대체한다.)
     
@@ -38,40 +39,65 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPublicKeySpec;
+import java.util.Base64;
 
 public class RsaAndTea {
     // 클라이언트에서 아래 값이 넘어왔다고 가정한다. tea 암호화에 사용된 key값은 'test'
-    String clientkId = "26406e045756a7e272ebfadb7ac784be82db9bbd48f95218ce6cc97cd842201fd7d05b0ea872e9e17c659abde9d6be57e3c2b914d62ce5e4b0cbd0e7847b161a7a7af4f856649a172febcbee558525af994727d11cad648525b29a7e3fd66cc0ca7e62733b70c7e4b5f1b92c1e2228faf10d8398c103d109efee530e3aa98051";
-    String clientPwd = "a340649726665f887bc19e69dca31aa929a311e061defe47b814d2c4f1741ed5386cc205201474386a3e615a94863fd1e646e800bda0c5839dfa0fea6a2fd37a1051c5dd31892adf11e6a453d610591c92c716876283634f0544bce750503925e3fb10a03971516358975ec6aebcaba36a94e72794b4c424d47a9a224f6f6454";
-
+    static String clientId = "id1234";
+    static String clientPwd = "pwd1234";
+    static String key = "RsaAndTeaTest1234";
     public static void main(String[] args) {
         try {
-            // RSA
-            KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
-            generator.initialize(1024);
+          
 
-            KeyPair keyPair = generator.genKeyPair();
-            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-
-            PublicKey publicKey = keyPair.getPublic();
-            PrivateKey privateKey = keyPair.getPrivate();
-
+            TEA tea = new TEA(key.getBytes());
+            
+            // 상황 1. 클라이언트가 도메인에 접속 이후 로그인 시도 할 경우
+            // RSA 키값 생성 키값 중 퍼블릭 값을 클라이언트에게 넘긴다.
+            RSA rsa = new RSA();
+            
             // 실제 사용시에 세션또는 DB 등에 개인키를 따로 저장한다.
-            // session.setAttribute("privateKey", privateKey);
+            // session.setAttribute("privateKey", rsa.getPrivateKey(););
+            
+            // 상황2 id와 pwd를 암호화한다. 실제로는 JS가 이를 담당한다.
+            // TEA 암호화
+            clientId = tea.encrypt(clientId);   // XVwvQQ/dm04=
+            clientPwd = tea.encrypt(clientPwd); // UwAorJi8YaI
+            // RSA 암호화 
+            // publicKeyString 형태를 사용할때는 publicKey를 문자열 형태로 다른곳에 보낼때 사용한다.
+            String publicKeyString = rsa.encodeBase64ToString(rsa.getPublicKey().getEncoded());
+            // publicKeyString을 받은 후 사용할 때는 다시 Base64로 디코딩해줘야 한다. 여기 수정해야함
+            PublicKey publicKey = rsa.convertStrToPubKey(rsa.decodeBase64(publicKeyString));
+            clientId = rsa.byteArrayToHex(rsa.encryptRsa(clientId, publicKey));
+            clientPwd = rsa.byteArrayToHex(rsa.encryptRsa(clientPwd, rsa.getPublicKey()));
 
-            // 생성한 공개키를 공개키로서 지정한다.
-            RSAPublicKeySpec publicKeySpec = (RSAPublicKeySpec) keyFactory.getKeySpec(publicKey, RSAPublicKeySpec.class);
+            // 상황3 클라이언트에게 암호화 된 아이디와 비밀번호를 받은 경우
+            // 클라이언트에게 받은 값을 복호화한다.
+            // 세션 또는 DB로 부터 생성된 개인키를 가져온다.
+            // PrivateKey privateKey = session.getAttribute("privateKey"); 
 
-            // 클라이언트와 공유할 공개키를 String 형태로 저장한다.
-            String publicKeyModulus = publicKeySpec.getModulus().toString(16);
-            String publicKeyExponent = publicKeySpec.getPublicExponent().toString(16);
+            // RSA 복호화
+            clientId = rsa.decryptRsa(rsa.getPrivateKey(), (rsa.hexToByteArray(clientId)));
+            clientPwd = rsa.decryptRsa(rsa.getPrivateKey(), rsa.hexToByteArray(clientPwd));            
 
+            // TEA 복호화
+            clientId = tea.decrypt(clientId);
+            clientPwd = tea.decrypt(clientPwd);
 
-            // TEA
+            System.out.println(clientId);
+            System.out.println(clientPwd);
+
         } catch (NoSuchAlgorithmException nae) {
             nae.printStackTrace();
         } catch(InvalidKeySpecException ise) {
             ise.printStackTrace();
+        }catch(Exception e){
+            e.printStackTrace();
         }
     }
+
+   
+    
+    
 }
+

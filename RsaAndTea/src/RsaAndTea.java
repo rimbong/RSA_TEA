@@ -31,15 +31,9 @@
     
  */
 
-import java.security.KeyFactory;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
-import java.security.spec.RSAPublicKeySpec;
-import java.util.Base64;
 
 public class RsaAndTea {
     // 클라이언트에서 아래 값이 넘어왔다고 가정한다. tea 암호화에 사용된 key값은 'test'
@@ -54,8 +48,8 @@ public class RsaAndTea {
             
             // 상황 1. 클라이언트가 도메인에 접속 이후 로그인 시도 할 경우
             // RSA 키값 생성 키값 중 퍼블릭 값을 클라이언트에게 넘긴다.
-            RSA rsa = new RSA();
-            
+            RSA rsa = RSA.getInstance();
+            rsa.init();
             // 실제 사용시에 세션또는 DB 등에 개인키를 따로 저장한다.
             // session.setAttribute("privateKey", rsa.getPrivateKey(););
             

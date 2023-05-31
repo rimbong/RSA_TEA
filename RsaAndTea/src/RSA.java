@@ -25,10 +25,29 @@ public class RSA {
 
     private static final String INSTANCE_TYPE = "RSA";
     private String publicKeyModulus = "";
-    private String publicKeyExponent = "";    
+    private String publicKeyExponent = "";
     private String publicKeyString = "";
     private PrivateKey privateKey = null;
     private PublicKey publicKey = null;
+
+    /**
+     * <pre>
+     * 쓰레드 세이프한 싱글톤 패턴
+     * 클래스안에 클래스(Holder)를 두어 JVM의 Class loader 매커니즘과 Class가 로드되는 시점을 이용하는 방법
+     * </pre>
+     * 
+     * @return 인스턴스
+     */
+
+    public RSA() {}
+
+    private static class RSAHolder {
+        public static final RSA instance = new RSA();
+    }
+
+    public static RSA getInstance() {
+        return RSAHolder.instance;
+    }
 
     public String getPublicKeyModulus() {
         return publicKeyModulus;
@@ -69,23 +88,21 @@ public class RSA {
     public void setPublicKey(PublicKey publicKey) {
         this.publicKey = publicKey;
     }
-    public RSA() {
-        init();
-    }
 
     public void init() {
 
         try {
             KeyPairGenerator generator = KeyPairGenerator.getInstance(INSTANCE_TYPE);
-            generator.initialize(1024, new SecureRandom()); // 1024 or 2048 , 보안은 2048 속도는 1024        
-            
+            generator.initialize(1024, new SecureRandom()); // 1024 or 2048 , 보안은 2048 속도는 1024
+
             KeyPair keyPair = generator.genKeyPair();
             KeyFactory keyFactory = KeyFactory.getInstance(INSTANCE_TYPE);
 
-            publicKey = keyPair.getPublic(); //공개키
-	        privateKey = keyPair.getPrivate(); //개인키
+            publicKey = keyPair.getPublic(); // 공개키
+            privateKey = keyPair.getPrivate(); // 개인키
 
-            RSAPublicKeySpec publicKeySpec = (RSAPublicKeySpec)keyFactory.getKeySpec(publicKey, RSAPublicKeySpec.class);
+            RSAPublicKeySpec publicKeySpec = (RSAPublicKeySpec) keyFactory.getKeySpec(publicKey,
+                    RSAPublicKeySpec.class);
             publicKeyModulus = publicKeySpec.getModulus().toString(16);
             publicKeyExponent = publicKeySpec.getPublicExponent().toString(16);
 
@@ -94,13 +111,14 @@ public class RSA {
         }
     }
 
-    public byte[] encryptRsa(String plainText, PublicKey publicKey) throws InvalidKeyException, InvalidKeySpecException, NoSuchAlgorithmException, NoSuchPaddingException,IllegalBlockSizeException, BadPaddingException {
+    public byte[] encryptRsa(String plainText, PublicKey publicKey) throws InvalidKeyException, InvalidKeySpecException,
+            NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
         Cipher cipher = Cipher.getInstance(INSTANCE_TYPE);
         cipher.init(Cipher.ENCRYPT_MODE, publicKey);
         return cipher.doFinal(plainText.getBytes());
     }
 
-    public String decryptRsa(PrivateKey privateKey,byte[] encryptedBytes) throws Exception {
+    public String decryptRsa(PrivateKey privateKey, byte[] encryptedBytes) throws Exception {
         Cipher cipher = Cipher.getInstance("RSA");
         cipher.init(Cipher.DECRYPT_MODE, privateKey);
         byte[] decryptedBytes = cipher.doFinal(encryptedBytes);
@@ -112,12 +130,12 @@ public class RSA {
         KeyFactory keyFactory = KeyFactory.getInstance(INSTANCE_TYPE);
         return keyFactory.generatePublic(new X509EncodedKeySpec(publicKey));
     }
-    
+
     public PrivateKey convertStrToPvtKey(String privateKey) throws InvalidKeySpecException, NoSuchAlgorithmException {
         KeyFactory keyFactory = KeyFactory.getInstance(INSTANCE_TYPE);
         return keyFactory.generatePrivate(new PKCS8EncodedKeySpec(privateKey.getBytes()));
     }
-    
+
     public byte[] hexToByteArray(String hex) {
         if (hex == null || hex.length() % 2 != 0) {
             return new byte[] {};
@@ -142,11 +160,11 @@ public class RSA {
         return sb.toString();
     }
 
-    public String encodeBase64ToString(byte[] b){
+    public String encodeBase64ToString(byte[] b) {
         return Base64.getEncoder().encodeToString(b);
     }
 
-    public byte[] decodeBase64(String str){
+    public byte[] decodeBase64(String str) {
         return Base64.getDecoder().decode(str.getBytes());
     }
 }

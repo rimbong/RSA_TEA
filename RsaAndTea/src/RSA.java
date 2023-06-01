@@ -27,7 +27,6 @@ public class RSA {
     private String publicKeyModulus = "";
     private String publicKeyExponent = "";
     private String publicKeyString = "";
-    private String privateKeyString = "";
     private PrivateKey privateKey = null;
     private PublicKey publicKey = null;
 
@@ -64,14 +63,6 @@ public class RSA {
 
     public void setPublicKeyExponent(String publicKeyExponent) {
         this.publicKeyExponent = publicKeyExponent;
-    }
-    
-    public String getPrivateKeyString() {
-        return privateKeyString;
-    }
-
-    public void setPrivateKeyString(String privateKeyString) {
-        this.privateKeyString = privateKeyString;
     }
 
     public String getPublicKeyString() {
@@ -135,14 +126,14 @@ public class RSA {
         return decryptedValue;
     }
 
-    public PublicKey convertToPubKey(byte[] publicKey) throws InvalidKeySpecException, NoSuchAlgorithmException {
+    public PublicKey convertStrToPubKey(byte[] publicKey) throws InvalidKeySpecException, NoSuchAlgorithmException {
         KeyFactory keyFactory = KeyFactory.getInstance(INSTANCE_TYPE);
         return keyFactory.generatePublic(new X509EncodedKeySpec(publicKey));
     }
 
-    public PrivateKey convertToPvtKey(byte[] privateKey) throws InvalidKeySpecException, NoSuchAlgorithmException {
+    public PrivateKey convertStrToPvtKey(String privateKey) throws InvalidKeySpecException, NoSuchAlgorithmException {
         KeyFactory keyFactory = KeyFactory.getInstance(INSTANCE_TYPE);
-        return keyFactory.generatePrivate(new PKCS8EncodedKeySpec(privateKey));
+        return keyFactory.generatePrivate(new PKCS8EncodedKeySpec(privateKey.getBytes()));
     }
 
     public byte[] hexToByteArray(String hex) {

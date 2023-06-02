@@ -1,6 +1,7 @@
 import java.util.Base64;
 /* 
  * 자바스크립트 TEA.js를 참고하여 만듬
+ * 
  */
 public class TEA {
 	private final int delta = 0x9E3779B9;

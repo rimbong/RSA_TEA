@@ -1,7 +1,6 @@
 import java.util.Base64;
 /* 
  * 자바스크립트 TEA.js를 참고하여 만듬
- * 
  */
 public class TEA {
 	private final int delta = 0x9E3779B9;
@@ -94,6 +93,7 @@ public class TEA {
 		try {
 			plainText = new String(plainTextBytes, "UTF-8");
 		} catch (Exception e) {
+			e.printStackTrace();
 		}
 		return plainText;
 	}

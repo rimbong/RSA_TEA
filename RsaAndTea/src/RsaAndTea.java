@@ -41,9 +41,29 @@ public class RsaAndTea {
     static String clientPwd = "pwd1234";
     static String key = "RsaAndTeaTest1234";
     public static void main(String[] args) {
-        try {
-          
+    	try {
+    		RsaAndTeaTest();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+    }
+   
+    public static void AesTest() {
+    	try {
+            AES aesUtil = new AES();
+            String plainValue = "AES-test";
+            String key = "hi";
+            String encValue = aesUtil.AES_Encode(plainValue, key);
+            System.out.println( "encValue : " + encValue );
 
+            String decValue = aesUtil.AES_Decode(encValue, key);
+            System.out.println( "decValue : " + decValue );
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    public static void RsaAndTeaTest() {
+    	try {
             TEA tea = new TEA(key.getBytes());
             
             // 상황 1. 클라이언트가 도메인에 접속 이후 로그인 시도 할 경우
@@ -89,9 +109,6 @@ public class RsaAndTea {
             e.printStackTrace();
         }
     }
-
-   
-    
     
 }
 
